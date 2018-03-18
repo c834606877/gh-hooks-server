@@ -10,12 +10,12 @@ from tornado import web, ioloop
 from tornado.web import HTTPError
 
 
-def create_handler(mappings: list, secret: str=None):
+def create_handler(mappings, secret):
     logging.info('Validate X-Hub-Signature: {0}'.format(secret is not None))
 
     class WebhookHandler(web.RequestHandler):
         def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
+            super(WebhookHandler, self).__init__( *args, **kwargs)
             self.processes = []
 
         def post(self, key):
@@ -28,7 +28,7 @@ def create_handler(mappings: list, secret: str=None):
             for target in targets:
                 if not os.path.isfile(target):
                     raise FileNotFoundError('File {0} not found'.format(target))
-                cwd = os.path.dirname(target)
+                cwd = os.path.dirname(target) or '.'
                 logging.info('Executing mapping {0}: {1}'.format(key, target))
                 p = subprocess.Popen(['bash', target], cwd=cwd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
                 self.processes.append(p)
